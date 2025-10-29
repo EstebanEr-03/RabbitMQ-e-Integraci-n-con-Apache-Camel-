@@ -1,0 +1,157 @@
+openapi: 3.0.1
+info:
+  title: API de Envíos
+  version: 1.0.0
+  description: API REST para registrar y consultar envíos - Integración con Apache Camel
+  contact:
+    name: Equipo de Desarrollo
+    email: desarrollo@empresa.com
+servers:
+  - url: http://localhost:8081/api
+    description: Servidor de desarrollo
+paths:
+  /envios:
+    get:
+      summary: Listar todos los envíos
+      description: Obtiene la lista completa de envíos registrados en el sistema
+      operationId: listarEnvios
+      responses:
+        '200':
+          description: Lista de envíos obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Envio'
+        '500':
+          description: Error interno del servidor
+    post:
+      summary: Crear un nuevo envío
+      description: Registra un nuevo envío en el sistema
+      operationId: crearEnvio
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EnvioRequest'
+      responses:
+        '201':
+          description: Envío creado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnvioResponse'
+        '400':
+          description: Datos de entrada inválidos
+        '500':
+          description: Error interno del servidor
+  /envios/{id}:
+    get:
+      summary: Obtener un envío por ID
+      description: Consulta los detalles de un envío específico por su identificador
+      operationId: obtenerEnvio
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identificador único del envío
+          schema:
+            type: string
+            example: "001"
+      responses:
+        '200':
+          description: Detalle del envío obtenido exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Envio'
+        '404':
+          description: Envío no encontrado
+        '500':
+          description: Error interno del servidor
+  /health:
+    get:
+      summary: Endpoint de salud
+      description: Verifica el estado del servicio
+      operationId: health
+      responses:
+        '200':
+          description: Servicio funcionando correctamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "UP"
+                  timestamp:
+                    type: string
+                    format: date-time
+components:
+  schemas:
+    Envio:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Identificador único del envío
+          example: "001"
+        destinatario:
+          type: string
+          description: Nombre del destinatario
+          example: "Juan Pérez"
+        direccion:
+          type: string
+          description: Dirección de entrega
+          example: "Av. Amazonas 123, Quito"
+        estado:
+          type: string
+          description: Estado actual del envío
+          enum: ["Registrado", "En tránsito", "Entregado", "Devuelto"]
+          example: "En tránsito"
+        fechaCreacion:
+          type: string
+          format: date-time
+          description: Fecha y hora de creación del envío
+          example: "2025-10-29T18:30:00Z"
+      required:
+        - id
+        - destinatario
+        - direccion
+        - estado
+    EnvioRequest:
+      type: object
+      properties:
+        destinatario:
+          type: string
+          description: Nombre del destinatario
+          example: "María López"
+        direccion:
+          type: string
+          description: Dirección de entrega
+          example: "Av. Central 456, Guayaquil"
+        estado:
+          type: string
+          description: Estado inicial del envío
+          enum: ["Registrado"]
+          default: "Registrado"
+          example: "Registrado"
+      required:
+        - destinatario
+        - direccion
+    EnvioResponse:
+      type: object
+      properties:
+        mensaje:
+          type: string
+          example: "Envío registrado correctamente"
+        id:
+          type: string
+          example: "002"
+        fechaCreacion:
+          type: string
+          format: date-time
+          example: "2025-10-29T18:30:00Z"

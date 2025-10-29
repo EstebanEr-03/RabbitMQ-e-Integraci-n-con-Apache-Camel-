@@ -22,6 +22,12 @@ dependencies {
     implementation 'org.apache.camel.springboot:camel-spring-boot-starter:4.14.0'
     implementation 'org.apache.camel.springboot:camel-file-starter:4.14.0'
     implementation 'org.apache.camel.springboot:camel-log-starter:4.14.0'
+    
+    // Camel REST y OpenAPI para API
+    implementation 'org.apache.camel.springboot:camel-rest-starter:4.14.0'
+    implementation 'org.apache.camel.springboot:camel-servlet-starter:4.14.0'
+    implementation 'org.apache.camel.springboot:camel-openapi-java-starter:4.14.0'
+    implementation 'org.apache.camel.springboot:camel-jackson-starter:4.14.0'
 
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'

@@ -1,0 +1,217 @@
+{
+  "info": {
+    "name": "API de Envíos - Apache Camel",
+    "description": "Colección de pruebas para la API REST de gestión de envíos implementada con Apache Camel",
+    "version": "1.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8081/camel",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Health Check",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["health"]
+        },
+        "description": "Verificar que el servicio esté funcionando correctamente"
+      },
+      "response": []
+    },
+    {
+      "name": "2. Listar Todos los Envíos",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/envios",
+          "host": ["{{baseUrl}}"],
+          "path": ["envios"]
+        },
+        "description": "Obtiene la lista completa de envíos registrados"
+      },
+      "response": []
+    },
+    {
+      "name": "3. Obtener Envío por ID - Existente (001)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/envios/001",
+          "host": ["{{baseUrl}}"],
+          "path": ["envios", "001"]
+        },
+        "description": "Consulta un envío específico que existe en el sistema"
+      },
+      "response": []
+    },
+    {
+      "name": "4. Obtener Envío por ID - Existente (002)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/envios/002",
+          "host": ["{{baseUrl}}"],
+          "path": ["envios", "002"]
+        },
+        "description": "Consulta otro envío específico que existe en el sistema"
+      },
+      "response": []
+    },
+    {
+      "name": "5. Obtener Envío por ID - No Existente (999)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/envios/999",
+          "host": ["{{baseUrl}}"],
+          "path": ["envios", "999"]
+        },
+        "description": "Prueba el comportamiento con un ID que no existe (debe retornar 404)"
+      },
+      "response": []
+    },
+    {
+      "name": "6. Crear Nuevo Envío - Básico",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"destinatario\": \"Ana García\",\n  \"direccion\": \"Av. La Prensa 789, Quito\",\n  \"estado\": \"Registrado\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/envios",
+          "host": ["{{baseUrl}}"],
+          "path": ["envios"]
+        },
+        "description": "Crear un nuevo envío con datos básicos"
+      },
+      "response": []
+    },
+    {
+      "name": "7. Crear Nuevo Envío - Completo",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"destinatario\": \"Roberto Mendez\",\n  \"direccion\": \"Calle Bolivar 456, Ambato\",\n  \"estado\": \"Registrado\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/envios",
+          "host": ["{{baseUrl}}"],
+          "path": ["envios"]
+        },
+        "description": "Crear otro envío para probar la funcionalidad completa"
+      },
+      "response": []
+    },
+    {
+      "name": "8. Documentación OpenAPI",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api-doc",
+          "host": ["{{baseUrl}}"],
+          "path": ["api-doc"]
+        },
+        "description": "Obtener la documentación OpenAPI generada automáticamente por Camel"
+      },
+      "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "test",
+      "script": {
+        "exec": [
+          "// Validaciones automáticas para todas las requests",
+          "pm.test('Response time is less than 2000ms', function () {",
+          "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+          "});",
+          "",
+          "pm.test('Content-Type is application/json', function () {",
+          "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+          "});",
+          "",
+          "pm.test('Status code is success', function () {",
+          "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+          "});"
+        ],
+        "type": "text/javascript"
+      }
+    }
+  ]
+}

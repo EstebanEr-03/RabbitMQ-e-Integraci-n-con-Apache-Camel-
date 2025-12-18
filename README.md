@@ -1,131 +1,240 @@
-# 🐪 Apache Camel - File Transfer Integration Project
+# 🐰 RabbitMQ e Integración con Spring Boot
 
-## Descripción
-Proyecto de integración de sistemas utilizando **Apache Camel** con **Spring Boot** que implementa el patrón **File Transfer** para procesar archivos CSV con transformaciones automáticas.
+## 📌 Objetivo
+
+**Aplicar el patrón de mensajería asincrónica** para demostrar el desacoplamiento entre productores y consumidores, configurando un broker de mensajería RabbitMQ y conectando productores y consumidores de mensajes usando Spring AMQP.
+
+## 🎯 Patrón de Integración Implementado
+
+### **Message Queue Pattern (Mensajería Asíncrona)**
+
+Este proyecto implementa el patrón **Message Queue** que permite:
+
+- ✅ **Desacoplamiento**: El productor y consumidor no se conocen entre sí ni necesitan estar activos simultáneamente
+- ✅ **Comunicación Asíncrona**: Los mensajes se envían sin esperar respuesta inmediata
+- ✅ **Persistencia de Mensajes**: RabbitMQ almacena los mensajes en cola hasta que sean consumidos
+- ✅ **Escalabilidad**: Múltiples consumidores pueden procesar mensajes en paralelo
+- ✅ **Confiabilidad**: Si el consumidor está caído, los mensajes se acumulan en la cola
+
+### Flujo de Mensajería
+
+```
+┌─────────────┐         ┌──────────────┐         ┌──────────────┐
+│  Producer   │ ───────>│   RabbitMQ   │ ───────>│   Consumer   │
+│   Route     │ Publish │    Queue     │ Consume │    Route     │
+└─────────────┘         └──────────────┘         └──────────────┘
+     (cada 5s)         test.camel.queue         (listener activo)
+```
 
 ## 🚀 Tecnologías Utilizadas
-- **Java 21** (LTS)
-- **Spring Boot 3.5.7**
-- **Apache Camel 4.14.0**
-- **Gradle 8.14.3**
-- **Enterprise Integration Patterns (EIP)**
 
-## 📋 Características Principales
+- **Java 21** - Lenguaje de programación
+- **Spring Boot 3.5.7** - Framework backend
+- **Spring AMQP** - Cliente de RabbitMQ para Java
+- **RabbitMQ 3** - Message broker
+- **Docker** - Contenedor para RabbitMQ
+- **Gradle 8.x** - Gestión de dependencias
 
-### ✨ Funcionalidades Implementadas
-- 📁 **Procesamiento automático** de archivos CSV
-- 🔄 **Transformación de contenido** a mayúsculas
-- 📊 **Filtrado por tipo de archivo** (.csv)
-- 💾 **Archivado con timestamp** para auditoría
-- 📝 **Logging detallado** con fecha y hora
-- 👁️ **Monitoreo de archivos** de log
-- 🛡️ **Preservación de archivos originales**
+## 📋 Requisitos Previos
 
-### 🏗️ Arquitectura
+- **Java JDK 21** o superior
+- **Docker Desktop** (para ejecutar RabbitMQ)
+- **Gradle 8.x** (incluido en wrapper)
+
+## 🔧 Configuración e Instalación
+
+### 1. Clonar el Repositorio
+
+```powershell
+git clone https://github.com/EstebanEr-03/RabbitMQ-e-Integraci-n-con-Apache-Camel-.git
+cd RabbitMQ-e-Integraci-n-con-Apache-Camel-
 ```
-Input Folder → [Filter CSV] → [Transform] → Output Folder
-                                      ↓
-                              Archived Folder (with timestamp)
+
+### 2. Iniciar RabbitMQ con Docker
+
+```powershell
+docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 `
+  -e RABBITMQ_DEFAULT_USER=admin `
+  -e RABBITMQ_DEFAULT_PASS=admin123 `
+  rabbitmq:3-management
+```
+
+**Puertos:**
+- `5672` - Puerto AMQP para conexión de aplicaciones
+- `15672` - Puerto web para Management UI
+
+### 3. Compilar el Proyecto
+
+```powershell
+.\gradlew.bat clean build -x test
+```
+
+### 4. Ejecutar la Aplicación
+
+```powershell
+.\gradlew.bat bootRun
 ```
 
 ## 📁 Estructura del Proyecto
+
 ```
 first-camel-project/
 ├── src/main/java/
 │   └── com/integracion/camel/first_camel_project/
-│       ├── FirstCamelProjectApplication.java
-│       └── FileRoute.java                     # 🎯 Flujo principal Camel
+│       ├── FirstCamelProjectApplication.java   # Clase principal Spring Boot
+│       ├── ProducerRoute.java                  # 🔵 Productor de mensajes
+│       └── ConsumerRoute.java                  # 🟢 Consumidor de mensajes
 ├── src/main/resources/
-│   └── application.properties                 # ⚙️ Configuraciones
-├── input/                                     # 📥 Archivos de entrada
-├── output/                                    # 📤 Archivos procesados  
-├── archived/                                  # 📚 Archivos archivados
-├── logs/                                      # 📋 Logs del sistema
-└── build.gradle                               # 🔧 Configuración del proyecto
+│   └── application.properties                  # Configuración RabbitMQ
+├── build.gradle                                # Dependencias del proyecto
+└── README.md                                   # Este archivo
 ```
 
-## 🚀 Cómo Ejecutar
+## 🔵 Componente Producer (ProducerRoute.java)
 
-### Prerequisitos
-- Java 21 (LTS)
-- Gradle 8.x
+**Responsabilidad:** Generar y enviar mensajes cada 5 segundos a RabbitMQ.
 
-### Pasos de Ejecución
-1. **Clonar el repositorio** (si aplica)
-2. **Compilar el proyecto:**
-   ```bash
-   ./gradlew build
-   ```
-3. **Ejecutar la aplicación:**
-   ```bash
-   ./gradlew bootRun
-   ```
-
-### 📥 Datos de Prueba
-Coloca archivos CSV en la carpeta `input/` para procesamiento automático.
-
-Ejemplo (`ventas.csv`):
-```csv
-id,producto,cantidad,precio
-1,Monitor,2,150
-2,Teclado,5,25
-3,Mouse,3,15
-```
-
-## 🔧 Configuración
-
-### Java Version
-El proyecto está configurado para usar **Java 21**:
-```gradle
-java {
-    toolchain { languageVersion = JavaLanguageVersion.of(21) }
+```java
+@Component
+@EnableScheduling
+public class ProducerRoute {
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
+    
+    @Scheduled(fixedRate = 5000)
+    public void sendMessage() {
+        String message = "Mensaje generado en " + timestamp;
+        rabbitTemplate.convertAndSend("test.camel.queue", message);
+    }
 }
 ```
 
-### Dependencies
-- Spring Boot Starter Web
-- Spring Boot Actuator  
-- Camel Spring Boot Starter
-- Camel File Component
-- Camel Log Component
+**Características:**
+- ⏱️ Programación automática cada 5 segundos (`@Scheduled`)
+- 📤 Envío de mensajes con timestamp
+- 🔗 Desacoplado del consumidor
 
-## 📊 Flujos de Integración
+## 🟢 Componente Consumer (ConsumerRoute.java)
 
-### 1. File Transfer Route
-- **Origen:** `file:input?noop=true&delay=5000`
-- **Filtro:** Solo archivos `.csv`
-- **Transformación:** Convertir a mayúsculas
-- **Destinos:** 
-  - `output/` (archivos procesados)
-  - `archived/` (con timestamp)
+**Responsabilidad:** Escuchar y procesar mensajes de la cola de RabbitMQ.
 
-### 2. Log Monitor Route  
-- **Origen:** `file:logs?noop=true&delay=10000`
-- **Filtro:** Solo archivos `.log`
-- **Acción:** Logging de monitoreo
-
-## 📝 Logs de Ejemplo
-```
-2025-10-25 09:30:49 - Procesando archivo: ventas.csv - Fecha: 2025-10-25 09:30:49
-2025-10-25 09:30:49 - Archivo CSV válido: ventas.csv  
-2025-10-25 09:30:49 - Contenido transformado a mayúsculas
-2025-10-25 09:30:49 - Archivo copiado a output: ventas.csv
-2025-10-25 09:30:50 - Archivo archivado con timestamp: ventas-20251025-093050.csv
+```java
+@Component
+public class ConsumerRoute {
+    @RabbitListener(queues = "test.camel.queue")
+    public void receiveMessage(String message) {
+        System.out.println("Mensaje recibido: " + message);
+    }
+}
 ```
 
-## 🎯 Casos de Uso
-- Integración de sistemas legacy
-- Procesamiento batch de datos
-- Intercambio B2B de archivos
-- Transformación automática de formatos
-- Sistemas de auditoría y archivado
+**Características:**
+- 👂 Listener activo (`@RabbitListener`)
+- 🔄 Procesamiento automático de mensajes
+- 🔗 Desacoplado del productor
 
-## 📚 Documentación Adicional
-- `ENTREGABLES_TALLER_CAMEL.md` - Documento completo de entregables
-- `INFORME_LABORATORIO.md` - Informe técnico detallado
+## 🎮 Demostración del Desacoplamiento
 
-## 👨‍💻 Desarrollo
-Este proyecto fue desarrollado como parte del taller de **Integración de Sistemas** utilizando **Enterprise Integration Patterns** con **Apache Camel**.
+### Escenario 1: Consumidor Desactivado
+
+1. **Comentar** el método `receiveMessage` en `ConsumerRoute.java`:
+```java
+// @RabbitListener(queues = "test.camel.queue")
+// public void receiveMessage(String message) { ... }
+```
+
+2. Reiniciar la aplicación
+
+3. **Resultado:** Los mensajes se acumulan en la cola sin perderse
+
+4. Verificar en RabbitMQ Management UI (http://localhost:15672):
+   - Ir a **Queues** → `test.camel.queue`
+   - Ver el contador **"Ready"** incrementándose
+
+### Escenario 2: Reactivar Consumidor
+
+1. Descomentar el método `receiveMessage`
+2. Reiniciar aplicación
+3. **Resultado:** Todos los mensajes acumulados se procesan inmediatamente
+
+**Esto demuestra:**
+- ✅ Persistencia de mensajes
+- ✅ Desacoplamiento temporal
+- ✅ Confiabilidad del broker
+
+## 🌐 Panel de Administración RabbitMQ
+
+Accede al Management UI en: **http://localhost:15672**
+
+**Credenciales:**
+- Usuario: `admin`
+- Contraseña: `admin123`
+
+**Funcionalidades:**
+- Ver colas y mensajes en tiempo real
+- Monitorear conexiones activas
+- Estadísticas de mensajes enviados/recibidos
+- Publicar/consumir mensajes manualmente
+
+## 📊 Salida Esperada
+
+Al ejecutar la aplicación, verás en consola:
+
+```
+2025-12-17 20:50:38 - Enviando: Mensaje generado en 2025-12-17 20:50:38
+2025-12-17 20:50:38 - Mensaje recibido: Mensaje generado en 2025-12-17 20:50:38
+2025-12-17 20:50:43 - Enviando: Mensaje generado en 2025-12-17 20:50:43
+2025-12-17 20:50:43 - Mensaje recibido: Mensaje generado en 2025-12-17 20:50:43
+```
+
+## 🧪 Pruebas Realizadas
+
+1. ✅ Envío y recepción de mensajes en tiempo real
+2. ✅ Acumulación de mensajes con consumidor desactivado
+3. ✅ Procesamiento de mensajes acumulados al reactivar consumidor
+4. ✅ Persistencia de mensajes durante reinicio de aplicación
+5. ✅ Conexión exitosa con RabbitMQ broker
+
+## 📚 Conceptos Clave de Mensajería Asíncrona
+
+### Ventajas
+
+- **Desacoplamiento espacial**: Los componentes no necesitan conocerse mutuamente
+- **Desacoplamiento temporal**: No necesitan estar activos simultáneamente
+- **Escalabilidad horizontal**: Fácil agregar más consumidores
+- **Tolerancia a fallos**: Mensajes no se pierden si un componente falla
+- **Balance de carga**: Distribución automática entre múltiples consumidores
+
+### Casos de Uso
+
+- Procesamiento de tareas en segundo plano
+- Integración entre microservicios
+- Notificaciones asíncronas
+- Procesamiento de eventos
+- Sistemas de cola de trabajo
+
+## 🛠️ Configuración
+
+Archivo `application.properties`:
+
+```properties
+spring.rabbitmq.host=localhost
+spring.rabbitmq.port=5672
+spring.rabbitmq.username=admin
+spring.rabbitmq.password=admin123
+```
+
+## 👨‍💻 Autor
+
+**Esteban Erazo**
+- GitHub: [@EstebanEr-03](https://github.com/EstebanEr-03)
+
+## 📄 Licencia
+
+Proyecto educativo - Taller de Integración de Sistemas
 
 ---
-*Proyecto educativo - Integración de Sistemas con Apache Camel y Java 21*
+
+**Universidad:** Pontificia Universidad Javeriana Cali  
+**Asignatura:** Integración de Sistemas  
+**Fecha:** Diciembre 2025

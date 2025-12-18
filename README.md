@@ -226,7 +226,7 @@ spring.rabbitmq.password=admin123
 
 ## 👨‍💻 Autor
 
-**Esteban Erazo**
+**Esteban Enríquez**
 - GitHub: [@EstebanEr-03](https://github.com/EstebanEr-03)
 
 ## 📄 Licencia

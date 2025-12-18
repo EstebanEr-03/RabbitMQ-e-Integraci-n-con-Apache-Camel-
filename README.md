@@ -235,6 +235,6 @@ Proyecto educativo - Taller de Integración de Sistemas
 
 ---
 
-**Universidad:** Pontificia Universidad Javeriana Cali  
+**Universidad:** UDLA
 **Asignatura:** Integración de Sistemas  
 **Fecha:** Diciembre 2025
